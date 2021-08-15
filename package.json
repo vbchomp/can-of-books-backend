@@ -1,14 +1,14 @@
 {
-  "name": "auth0TestBack",
+  "name": "canofbooks",
   "version": "1.0.0",
-  "description": "",
+  "description": "This repository has starter code to begin work on creating your own online bookshelf.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Heather Bisgaard",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
@@ -16,5 +16,13 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.0.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vbchomp/can-of-books-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vbchomp/can-of-books-backend/issues"
+  },
+  "homepage": "https://github.com/vbchomp/can-of-books-backend#readme"
 }
