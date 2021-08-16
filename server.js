@@ -4,20 +4,19 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
-
-// This is from jsonwebtoken dock 
-// https://www.npmjs.com/package/jsonwebtoken
-const client = jwksClient({
-  // this url comes from your app on the auth0 dashboard 
-  jwksUri: 'https://dev-4rwdhvtd.us.auth0.com/.well-known/jwks.json'
-});
-
-
 app.use(cors());
 
 const PORT = process.env.PORT || 3001;
+
+const jwt = require('jsonwebtoken');
+const jwksClient = require('jwks-rsa');
+
+// This is from jsonwebtoken docs 
+// https://www.npmjs.com/package/jsonwebtoken
+const client = jwksClient({
+  // this is from the single page application, advanced settings, endpoint JWKS settings. 
+  jwksUri: 'https://dev-xmbqk6d0.us.auth0.com/.well-known/jwks.json'
+});
 
 // this comes from this jsonwebtoken docs
 function getKey(header, callback){
@@ -28,10 +27,9 @@ function getKey(header, callback){
 }
 
 app.get('/test', (request, response) => {
-  // TODO: 
+  // DONE: 
   // STEP 1: get the jwt from the headers
   const token = request.headers.authorization.split(' ')[1];
-  
   // STEP 2. use the jsonwebtoken library to verify that it is a valid jwt
   jwt.verify(token, getKey, {}, function(err, user) {
     if (err){
@@ -41,6 +39,5 @@ app.get('/test', (request, response) => {
     response.send(user);
   });
 })
-  // jsonwebtoken dock - https://www.npmjs.com/package/jsonwebtoken
 
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
