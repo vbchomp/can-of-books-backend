@@ -30,3 +30,4 @@ React, Node JS, Mongo DB, Mongoose, GitHub, Auth0, JWKS, Trello
 <!-- Give credit (and a link) to other people or resources that helped you build this application. -->
 
 - Connor Boyce, Software Developer, Pair Programming
+- Joe Pennock, TA, helped me fix my onClick server button, helped me get my database to connect with Auth0 to get email from user and jwt token.
