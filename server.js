@@ -13,7 +13,7 @@ const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 const { request } = require('express');
 
-const BookModel = require('./BookModel');
+const BookModel = require('./models/books');
 
 // This is from jsonwebtoken docs 
 // https://www.npmjs.com/package/jsonwebtoken
@@ -21,16 +21,6 @@ const client = jwksClient({
   // this is from the single page application, advanced settings, endpoint JWKS settings. 
   jwksUri: 'https://dev-xmbqk6d0.us.auth0.com/.well-known/jwks.json'
 });
-
-// this is from the class demo
-// const bookSchema = new mongoose.Schema({
-//   title: {type: String, required: true},
-//   description: {type: String, required: true},
-//   status: {type: String},
-//   email: {type: String},
-// })
-
-// const BookModel = mongoose.model('books', bookSchema);
 
 // this comes from this jsonwebtoken docs
 function getKey(header, callback) {
@@ -71,19 +61,6 @@ async function seed(request, response) {
   console.log('DB already seeded');
 }
 
-
-// Clearing the database
-async function clear(request, response) {
-  try {
-    await BookModel.deleteMany({});
-    console.log('Bombed the DBase');
-  }
-  catch (err) {
-    console.log('Error in clearing database');
-  }
-}
-
-
 // test route
 app.get('/test', (request, response) => {
   // DONE: 
@@ -111,8 +88,8 @@ app.get('/books', (request, response) => {
       }
       // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
       let email = request.query.email;
-      BookModel.find({email}, (err, books) => {
-        if (err){
+      BookModel.find({ email }, (err, books) => {
+        if (err) {
           console.log('Error');
         } else {
           response.status(200).send(books);
@@ -130,6 +107,17 @@ app.get('/seed', seed);
 
 // clear route - BE GENTLE
 app.get('/clear', clear);
+
+// Clearing the database
+async function clear(request, response) {
+  try {
+    await BookModel.deleteMany({});
+    console.log('Bombed the DBase');
+  }
+  catch (err) {
+    console.log('Error in clearing database');
+  }
+}
 
 
 // connecting to the database
