@@ -11,7 +11,6 @@ const PORT = process.env.PORT || 3001;
 
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-const { request } = require('express');
 
 const BookModel = require('./models/books');
 
@@ -84,13 +83,14 @@ app.get('/books', (request, response) => {
   try {
     jwt.verify(token, getKey, {}, function (err, user) {
       if (err) {
-        response.status(500).send('invalid token');
+        response.status(500).send('Invalid token');
       }
       // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
       let email = request.query.email;
-      BookModel.find({ email }, (err, books) => {
+      // BookModel is the collection created by the schema
+      BookModel.find({email}, (err, books) => {
         if (err) {
-          console.log('Error');
+          response.status(500).send('Cannot access the database');
         } else {
           response.status(200).send(books);
         }
@@ -98,7 +98,7 @@ app.get('/books', (request, response) => {
     });
   }
   catch (err) {
-    response.status(500).send('Database error - fix and come back later!');
+    response.status(500).send('Server error - fix and come back later!');
   }
 })
 
@@ -108,14 +108,14 @@ app.get('/seed', seed);
 // clear route - BE GENTLE
 app.get('/clear', clear);
 
-// Clearing the database
+// Clearing the database - BE GENTLE
 async function clear(request, response) {
   try {
     await BookModel.deleteMany({});
-    console.log('Bombed the DBase');
+    response.status(200).send('Bombed the database');
   }
   catch (err) {
-    console.log('Error in clearing database');
+    response.status(500).send('Error in clearing database');
   }
 }
 
