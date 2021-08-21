@@ -1,18 +1,18 @@
 'use strict';
 
+// dependencies here
 require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
 app.use(cors());
-const mongoose = require('mongoose');
+// in order to acces the request request body, use express.json()
+app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-
-const BookModel = require('./models/books');
 
 // This is from jsonwebtoken docs 
 // https://www.npmjs.com/package/jsonwebtoken
@@ -29,6 +29,20 @@ function getKey(header, callback) {
   });
 }
 
+// mongoose / mongo db connection here
+const mongoose = require('mongoose');
+// connecting to the database
+mongoose.connect('mongodb://127.0.0.1:27017/books', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+  .then(async () => {
+    console.log('Connected to the database');
+  })
+
+const BookModel = require('./models/books');
+
+
 // Seeding the database
 async function seed(request, response) {
   let books = await BookModel.find({});
@@ -36,19 +50,19 @@ async function seed(request, response) {
     const bookOne = new BookModel({
       title: "Yoke My Yoga of Self-Acceptance",
       description: "To Yoke mind and body",
-      status: "Not sure what this is for",
+      status: "Have not read yet",
       email: "vbchomp@gmail.com",
     });
     const bookTwo = new BookModel({
       title: "Sahara",
       description: "Pitt and Giordino save the world from a chemical waste dump polluting the water supply causing red tide and discover a Civil War ironclad ship in the middle of the desert",
-      status: "Not sure what this is for",
+      status: "Good, fast read",
       email: "vbchomp@gmail.com",
     });
     const bookThree = new BookModel({
       title: "Omega Days",
       description: "Within weeks, the world is overrun by the walking dead. Only the quick and the smart, the strong and the determined, will survive—for now",
-      status: "Not sure what this is for",
+      status: "BWAINS!!!",
       email: "vbchomp@gmail.com",
     });
     bookOne.save();
@@ -69,7 +83,7 @@ app.get('/test', (request, response) => {
   // STEP 2. use the jsonwebtoken library to verify that it is a valid jwt
   jwt.verify(token, getKey, {}, function (err, user) {
     if (err) {
-      response.status(500).send('invalid token');
+      response.status(500).send('Invalid token');
     }
     // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
     response.status(200).send(user);
@@ -87,14 +101,20 @@ app.get('/books', (request, response) => {
       }
       // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
       let email = request.query.email;
-      // BookModel is the collection created by the schema
-      BookModel.find({email}, (err, books) => {
-        if (err) {
-          response.status(500).send('Cannot access the database');
-        } else {
-          response.status(200).send(books);
-        }
-      });
+      console.log('email:', email);
+      if (email === user.email) {
+        // BookModel is the collection created by the schema
+        // object of {email} will have value assigned to variable of email is same as {email: email}
+        BookModel.find({email}, (err, books) => {
+          if (err) {
+            response.status(500).send('Cannot access the database');
+          } else {
+            response.status(200).send(books);
+          }
+        });
+      } else {
+        response.send(' You are not who you say you are!');
+      }
     });
   }
   catch (err) {
@@ -104,6 +124,11 @@ app.get('/books', (request, response) => {
 
 // seed route
 app.get('/seed', seed);
+
+// POST new books
+app.post('/post-books', (request,response) => {
+  response.send('Are we there yet?');
+})
 
 // clear route - BE GENTLE
 app.get('/clear', clear);
@@ -118,16 +143,6 @@ async function clear(request, response) {
     response.status(500).send('Error in clearing database');
   }
 }
-
-
-// connecting to the database
-mongoose.connect('mongodb://127.0.0.1:27017/books', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-  .then(async () => {
-    console.log('Connected to the database');
-  })
 
 // listening for the port
 app.listen(PORT, () => console.log(`listening on ${PORT}`));
