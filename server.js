@@ -79,7 +79,7 @@ app.get('/test', (request, response) => {
   // DONE: 
   // STEP 1: get the jwt from the headers
   const token = request.headers.authorization.split(' ')[1];
-  console.log()
+  // console.log()
   // STEP 2. use the jsonwebtoken library to verify that it is a valid jwt
   jwt.verify(token, getKey, {}, function (err, user) {
     if (err) {
@@ -93,14 +93,17 @@ app.get('/test', (request, response) => {
 // books route
 app.get('/books', (request, response) => {
   const token = request.headers.authorization.split(' ')[1];
+  console.log('request', request.query.email);
+  // console.log('token', token);
   // STEP 2. use the jsonwebtoken library to verify that it is a valid jwt
+  let email = request.query.email;
   try {
     jwt.verify(token, getKey, {}, function (err, user) {
+      console.log('token', token);
       if (err) {
         response.status(500).send('Invalid token');
       }
       // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
-      let email = request.query.email;
       console.log('email:', email);
       if (email === user.email) {
         // BookModel is the collection created by the schema
@@ -125,10 +128,33 @@ app.get('/books', (request, response) => {
 // seed route
 app.get('/seed', seed);
 
-// POST new books
-app.post('/post-books', (request,response) => {
-  response.send('Are we there yet?');
-})
+
+// POST new books route
+app.post('/books', (request,response) => {
+  // tested that it worked in insomnia
+  // response.send('Are we there yet?');
+  //using request.body
+  // let title = request.body.title;
+
+  // or request.body.object uses onject deconstruction
+  // let { title, description, status, email } = request.body;
+  // let bookObjLit = {
+  //   title: title,
+  //   status: status,
+  //   description: description,
+  // };
+
+  // POSTing new book to DB
+  // let newBook = new BookModel({ title, description, status, email });
+  let bookFour = new BookModel({ title: "Simple Genius", description: "In a world of secrets, human genius is power and sometimes it is simply deadly...", status: "Picked up at ID card office", email: "vbchomp@gmail.com" });
+
+  // newBook.save();
+  bookFour.save();
+
+  // response.send(`${bookObjLit}`);
+  // response.send(`${title}, ${description}, ${status}`);
+  response.send('You have successfully added a new book to the database.');
+});
 
 // clear route - BE GENTLE
 app.get('/clear', clear);
