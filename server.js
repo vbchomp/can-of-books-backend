@@ -76,16 +76,15 @@ async function seed(request, response) {
 
 // test route
 app.get('/test', (request, response) => {
-  // DONE: 
-  // STEP 1: get the jwt from the headers
+  // get the jwt from the headers
   const token = request.headers.authorization.split(' ')[1];
   // console.log()
-  // STEP 2. use the jsonwebtoken library to verify that it is a valid jwt
+  // use the jsonwebtoken library to verify that it is a valid jwt
   jwt.verify(token, getKey, {}, function (err, user) {
     if (err) {
       response.status(500).send('Invalid token');
     }
-    // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
+    // prove that everything is working correctly, send the opened jwt back to the front-end
     response.status(200).send(user);
   });
 })
@@ -95,7 +94,7 @@ app.get('/books', (request, response) => {
   const token = request.headers.authorization.split(' ')[1];
   console.log('request', request.query.email);
   // console.log('token', token);
-  // STEP 2. use the jsonwebtoken library to verify that it is a valid jwt
+  // use the jsonwebtoken library to verify that it is a valid jwt
   let email = request.query.email;
   try {
     jwt.verify(token, getKey, {}, function (err, user) {
@@ -103,12 +102,12 @@ app.get('/books', (request, response) => {
       if (err) {
         response.status(500).send('Invalid token');
       }
-      // STEP 3: to prove that everything is working correctly, send the opened jwt back to the front-end
+      // to prove that everything is working correctly, send the opened jwt back to the front-end
       console.log('email:', email);
       if (email === user.email) {
         // BookModel is the collection created by the schema
         // object of {email} will have value assigned to variable of email is same as {email: email}
-        BookModel.find({email}, (err, books) => {
+        BookModel.find({ email }, (err, books) => {
           if (err) {
             response.status(500).send('Cannot access the database');
           } else {
@@ -128,38 +127,85 @@ app.get('/books', (request, response) => {
 // seed route
 app.get('/seed', seed);
 
-
+// FIZZO - RYAN said to leave Auth out for now as I am having issues getting new books added with my machine.
 // POST new books route
-app.post('/books', (request,response) => {
+app.post('/books', async (request, response) => {
   // tested that it worked in insomnia
   // response.send('Are we there yet?');
   //using request.body
   // let title = request.body.title;
-
+  // const token = request.headers.authorization.split(' ')[1];
+  // console.log('request', request.query.email);
   // or request.body.object uses onject deconstruction
-  // let { title, description, status, email } = request.body;
+  let { title, description, status, email } = request.body;
   // let bookObjLit = {
   //   title: title,
   //   status: status,
   //   description: description,
   // };
+  try {
+    // jwt.verify(token, getKey, {}, function (err, user) {
+    //   console.log('token', token);
+    //   if (err) {
+    //     response.status(500).send('Invalid token');
+    //   }
+    //   console.log('email:', email);
+    //   if (email === user.email) {
+        // POSTing new book to DB
+        let newBook = new BookModel({ title, description, status, email });
+        // let bookFour = new BookModel({ title: "Simple Genius", description: "In a world of secrets, human genius is power and sometimes it is simply deadly...", status: "Picked up at ID card office", email: "vbchomp@gmail.com" });
 
-  // POSTing new book to DB
-  // let newBook = new BookModel({ title, description, status, email });
-  let bookFour = new BookModel({ title: "Simple Genius", description: "In a world of secrets, human genius is power and sometimes it is simply deadly...", status: "Picked up at ID card office", email: "vbchomp@gmail.com" });
+        await newBook.save();
+        // bookFour.save();
+        // response.send(`${bookObjLit}`);
+        // response.send(`${title}, ${description}, ${status}`);
+        response.status(200).send(newBook);
+      }
+    // });
+  // }
+  catch (err) {
+    response.status(500).send('Server error - fix and come back later!');
+  }
+})
 
-  // newBook.save();
-  bookFour.save();
-
-  // response.send(`${bookObjLit}`);
-  // response.send(`${title}, ${description}, ${status}`);
-  response.send('You have successfully added a new book to the database.');
-});
+// FIZZO - RYAN said to leave Auth out for now as I am having issues getting books deleted with my machine.
+// delete route from code review
+// async and await do not work in this delete route. not sure why.
+app.delete('/books/:id', async (request, response) => {
+  let bookId = request.params.id;
+  console.log('request.query:', request.query);
+  // user is defined when logged in with auth0
+  try {
+    // const token = request.headers.authorization.split(' ')[1];
+    // console.log()
+    // use the jsonwebtoken library to verify that it is a valid jwt
+    // jwt.verify(token, getKey, {}, function (err, user) {
+    //   if (err) {
+    //     response.status(500).send('Invalid token');
+    //   } else {
+        // prove that everything is working correctly, send the opened jwt back to the front-end
+        // let email = request.query.email;
+        // console.log('email:', email);
+        // if user is authenticated 
+        // let requestedBook = BookModel.find({ bookId });
+        // if (requestedBook._id === user.email) {
+          // delete the book
+          // will not work with await here
+          await BookModel.findByIdAndDelete({ _id: bookId });
+          response.send('Deleted that pesky book! You should go add another!');
+        // }
+      // };
+    // });
+  }
+  catch (err) {
+    response.status(500).send('Server error - fix and come back later!');
+  }
+})
 
 // clear route - BE GENTLE
 app.get('/clear', clear);
 
-// Clearing the database - BE GENTLE
+// clearing the database - BE GENTLE
 async function clear(request, response) {
   try {
     await BookModel.deleteMany({});
