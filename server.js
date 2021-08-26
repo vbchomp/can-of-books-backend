@@ -37,6 +37,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/books', {
   useUnifiedTopology: true
 })
   .then(async () => {
+    seed();
     console.log('Connected to the database');
   })
 
@@ -71,7 +72,7 @@ async function seed(request, response) {
     console.log('I have seeded the DB', "http://localhost:3001/seed");
 
   }
-  console.log('DB already seeded');
+  response.status(200).send('DB already seeded');
 }
 
 // test route
@@ -151,17 +152,17 @@ app.post('/books', async (request, response) => {
     //   }
     //   console.log('email:', email);
     //   if (email === user.email) {
-        // POSTing new book to DB
-        let newBook = new BookModel({ title, description, status, email });
-        // let bookFour = new BookModel({ title: "Simple Genius", description: "In a world of secrets, human genius is power and sometimes it is simply deadly...", status: "Picked up at ID card office", email: "vbchomp@gmail.com" });
+    // POSTing new book to DB
+    let newBook = new BookModel({ title, description, status, email });
+    // let bookFour = new BookModel({ title: "Simple Genius", description: "In a world of secrets, human genius is power and sometimes it is simply deadly...", status: "Picked up at ID card office", email: "vbchomp@gmail.com" });
 
-        await newBook.save();
-        // bookFour.save();
-        // response.send(`${bookObjLit}`);
-        // response.send(`${title}, ${description}, ${status}`);
-        response.status(200).send(newBook);
-      }
-    // });
+    await newBook.save();
+    // bookFour.save();
+    // response.send(`${bookObjLit}`);
+    // response.send(`${title}, ${description}, ${status}`);
+    response.status(200).send(newBook);
+  }
+  // });
   // }
   catch (err) {
     response.status(500).send('Server error - fix and come back later!');
@@ -183,19 +184,33 @@ app.delete('/books/:id', async (request, response) => {
     //   if (err) {
     //     response.status(500).send('Invalid token');
     //   } else {
-        // prove that everything is working correctly, send the opened jwt back to the front-end
-        // let email = request.query.email;
-        // console.log('email:', email);
-        // if user is authenticated 
-        // let requestedBook = BookModel.find({ bookId });
-        // if (requestedBook._id === user.email) {
-          // delete the book
-          // will not work with await here
-          await BookModel.findByIdAndDelete({ _id: bookId });
-          response.send('Deleted that pesky book! You should go add another!');
-        // }
-      // };
+    // prove that everything is working correctly, send the opened jwt back to the front-end
+    // let email = request.query.email;
+    // console.log('email:', email);
+    // if user is authenticated 
+    // let requestedBook = BookModel.find({ bookId });
+    // if (requestedBook._id === user.email) {
+    // delete the book
+    // will not work with await here
+    await BookModel.findByIdAndDelete(bookId);
+    response.send('Deleted that pesky book! You should go add another!');
+    // }
+    // };
     // });
+  }
+  catch (err) {
+    response.status(500).send('Server error - fix and come back later!');
+  }
+})
+
+// put request to update a book
+app.update('/books/:id', async (request, response) => {
+  let bookId = request.params.id;
+  console.log('request.query:', request.query);
+  // user is defined when logged in with auth0
+  try {
+    await BookModel.findByIdAndUpdate(bookId);
+    response.send('Updated that book!');
   }
   catch (err) {
     response.status(500).send('Server error - fix and come back later!');
