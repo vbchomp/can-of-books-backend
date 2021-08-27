@@ -72,7 +72,7 @@ async function seed(request, response) {
     console.log('I have seeded the DB', "http://localhost:3001/seed");
 
   }
-  response.status(200).send('DB already seeded');
+  console.log('DB already seeded');
 }
 
 // test route
@@ -204,12 +204,12 @@ app.delete('/books/:id', async (request, response) => {
 })
 
 // put request to update a book
-app.update('/books/:id', async (request, response) => {
+app.put('/books/:id', async (request, response) => {
   let bookId = request.params.id;
-  console.log('request.query:', request.query);
+  console.log('request.body:', request.body);
   // user is defined when logged in with auth0
   try {
-    await BookModel.findByIdAndUpdate(bookId);
+    await BookModel.findByIdAndUpdate(bookId, request.body);
     response.send('Updated that book!');
   }
   catch (err) {
